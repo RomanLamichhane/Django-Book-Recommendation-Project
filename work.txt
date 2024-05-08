@@ -1,0 +1,18 @@
+user
+     - admin 
+     -seller
+     -buyers
+-> group ->permission
+
+books
+seller -> create , update, delete
+buyer -> read
+
+filter:
+books category
+publication
+published date
+price
+
+book ->  rent buyer
+rent -> date return date fine 
