@@ -1,12 +1,14 @@
 from django.shortcuts import render
-from rest_framework.generics import ListAPIView,CreateAPIView,UpdateAPIView,RetrieveAPIView,DestroyAPIView
-from .serializers import UserSerializer,UserListSerializer,UserLoginSerializer,UserLogoutSerializer
+from rest_framework.generics import ListAPIView,CreateAPIView,UpdateAPIView,RetrieveAPIView,DestroyAPIView,RetrieveUpdateAPIView
+from .serializers import UserCreateSerializer,UserListSerializer,UserLoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.response import Response
 from .models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 
@@ -20,7 +22,7 @@ def get_tokens_for_user(user):
 
 class UserCreateView(CreateAPIView):
     queryset=User.objects.all()
-    serializer_class=UserSerializer
+    serializer_class=UserCreateSerializer
 
     def post(self, request, *args, **kwargs):
         serializer=self.get_serializer(data=request.data)
@@ -31,26 +33,27 @@ class UserCreateView(CreateAPIView):
     
 class SellerListView(ListAPIView):
     serializer_class = UserListSerializer
+    queryset= User.objects.all()
 
     def get_queryset(self):
-        return User.objects.all()
+        return User.objects.filter(seller=True)
     
 class UserListView(ListAPIView):
+    queryset=User.objects.all()
     serializer_class=UserListSerializer
-    def get_queryset(self):
-        return User.objects.all()
 
 class BuyerListView(ListAPIView):
     serializer_class = UserListSerializer
+    queryset=User.objects.all()
 
     def get_queryset(self):
-        return User.objects.filter()
+        return User.objects.filter(seller=False)
     
 class UserUpdateView(UpdateAPIView):
     serializer_class = UserListSerializer
+    queryset=User
 
-    def get_queryset(self):
-        return User.objects.all()
+    
     
 class UserRetrieveView(RetrieveAPIView):
     serializer_class = UserListSerializer
@@ -67,14 +70,20 @@ class UserDeleteView(DestroyAPIView):
 class UserLoginView(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self,request):
+        serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user=serializer.validated_data['user']
-        tokens=get_tokens_for_user(user)
-        return Response(tokens, status=status.HTTP_200_OK)
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "refresh":str(refresh),
+            "access":str(refresh.access_token),
+        } ,status=status.HTTP_200_OK)
     
-class UserLogoutView(APIView):
+class LogoutView(APIView):
+    permission_classes=(IsAuthenticated,)
+    authentication_classes=(JWTAuthentication,)
     def post(self,request):
         refresh_token =  request.data.get('refresh_token')
         if not refresh_token:

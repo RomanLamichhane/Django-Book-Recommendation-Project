@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserCreateView,SellerListView,BuyerListView,UserListView,UserRetrieveView,UserDeleteView,UserLogoutView,UserLoginView
+from .views import UserCreateView,SellerListView,BuyerListView,UserListView,UserRetrieveView,UserDeleteView,UserLoginView,LogoutView
 
 urlpatterns=[
     path('create/',UserCreateView.as_view(),name='create-user'),
@@ -9,6 +9,6 @@ urlpatterns=[
     path('<int:pk>/Retrieve/',UserRetrieveView.as_view(),name='Retrieve-list'),
     path('<int:pk>/Delete/',UserDeleteView.as_view(),name='Delete-list'),
     path('login/', UserLoginView.as_view(), name='token_obtain_pair'),
-    path('logout/',UserLogoutView.as_view(),name='user-logout')
+    path('logout/',LogoutView.as_view(),name='user-logout')
      
 ]
