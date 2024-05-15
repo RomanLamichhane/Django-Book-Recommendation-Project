@@ -37,6 +37,7 @@ class BookSerializer(serializers.ModelSerializer):
         return User.objects.filter(seller=True)
     
 class BookCreateSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model=Book
         fields="__all__"
